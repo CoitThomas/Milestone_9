@@ -1,0 +1,36 @@
+Challenge
+
+    Write three programs.
+
+
+Create a database
+
+    The first program will read in two files and create a Sqlite database file that     stores the files. The first file will be your test file for the last module.             Design a database to store the information in that file, plus another file with     the following format (you can fill this file out as you go):
+
+    “American”,”{month}/{day}/{year}”
+    “European”,”{day}/{month}/{year}” 
+    …
+
+    The first value in the file is the name of one of your nationalities, while the       second is a python format string representing how to format the date for        that nationality.
+
+
+Find a person
+
+    The second program will take in one string command line argument, of the     form
+
+    python find_person.py “Coit Scharringhausen”
+
+    It will print the name, nationality and birthdate in the correct format of Coit     Scharringhausen as found in the Sqlite database and quit.
+
+
+
+    I will be expecting a join used in this program. Do not store how to format     different nationalities in Python - refer to the database, and you should         only need to write one query to get all the information you need.
+
+
+Find all people of a nationality
+
+    The third program will take in one string command line argument of the         form
+
+    python find_nationality.py “American”
+
+    It will then print the names of all the people in the database of that         nationality and quit.
