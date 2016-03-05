@@ -4,12 +4,6 @@ birthdate:4/20/1983
 username:coit125
 nationality:american
 birthdate:1/25/1984
-username:coit125
-nationality:american
-birthdate:1/25/1984
-username:coit125
-nationality:american
-birthdate:1/25/1984
 username:nigelhiggenbothem
 nationality:british
 birthdate:9/19/1985

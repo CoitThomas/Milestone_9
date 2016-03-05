@@ -3,7 +3,7 @@ Write the files to an SQLite database file for storage.
 """
 import sqlite3
 import re
-import ipdb
+#import ipdb
 
 def read_file(file_name):
     """Read in data from a file and return it."""
@@ -28,6 +28,7 @@ def parse(regex, group_name, data_chunk):
     regular expression. Group the parsed data according to a given
     group name and return it. If there is not a match, return None.
     """
+    #ipdb.set_trace()
     parsed_data = re.search(regex, data_chunk)
     return parsed_data.group(group_name) if parsed_data else None
 
@@ -99,14 +100,14 @@ def valid_year(year):
     """
     return 1800 <= year <= 2200
 
-def create_database(users_filename, date_formats_filename):
+def create_database(db_filename, users_filename, date_formats_filename):
     """Create an SQLite database file."""
-    database = sqlite3.connect(':memory:')
+    database = sqlite3.connect(db_filename)
     cursor = database.cursor()
 
     # Create 'Users' table
     cursor.execute("""
-        CREATE TABLE Users(Username text,
+        CREATE TABLE Users(Username text PRIMARY KEY,
                            Nationality text,
                            Birthdate datetime)
     """)
@@ -120,11 +121,12 @@ def create_database(users_filename, date_formats_filename):
                             chunk[1],
                            )
         date = parse("birthdate:(?P<birthdate>[0-9]{1,2}/[0-9]{1,2}/[0-9]{4})",
-                          "birthdate",
-                          chunk[2],
-                         )
+                     "birthdate",
+                     chunk[2],
+                    )
         #ipdb.set_trace()
-        birthdate = transpose_date(date)
+        if date:
+            birthdate = transpose_date(date)
         if username and nationality and birthdate:
             cursor.execute("""INSERT INTO Users(Username, Nationality, Birthdate)
                               VALUES(?,?,?)""", (username, nationality, birthdate))
@@ -132,34 +134,37 @@ def create_database(users_filename, date_formats_filename):
 
     # Create 'Date_Formats' table
     cursor.execute("""
-        CREATE TABLE Date_Formats(Nationality text,
-                                  Date_Format text,
+        CREATE TABLE Date_Formats(Nationality text PRIMARY KEY,
+                                  Date_Format text)
     """)
     data = read_file(date_formats_filename)
     assert data, "There is no data in file: %s" % date_formats_filename
     data_chunks = chunk_data(data, 1)
     for chunk in data_chunks:
-        nationality = parse("(?P<nationality>[a-zA-Z]+ ?[a-zA-Z]*),",
-                            'nationality',
-                            chunk)
-        date_format = parse("(?P<date_format>'{month|day|year}/{month|day}/{day|year}')",
-                            'date_format',
-                            chunk)
-    if nationality and date_format:
-        cursor.execute("""INSERT INTO Date_Formats(Nationality, Date_Format)
-                          VALUES (?,?)""", (nationality, date_format))
+        if chunk:
+            nationality = parse("(?P<nationality>[a-zA-Z]+ ?[a-zA-Z]*),",
+                                'nationality',
+                                chunk[0])
+            #ipdb.set_trace()
+            date_format = parse("(?P<date_format>'{[a-zA-Z]+}/{[a-zA-Z]+}/{[a-zA-Z]+}')",
+                                'date_format',
+                                chunk[0])
+            #ipdb.set_trace()
+            if nationality and date_format:
+                cursor.execute("""INSERT INTO Date_Formats(Nationality, Date_Format)
+                                  VALUES (?,?)""", (nationality, date_format))
     database.commit()
 
     database.close()
 
 if __name__ == "__main__":
-    DB_FILENAME = 'myDatabase.db' # Insert desired database filename here.
+    DB_FILENAME = 'myDatabase.sqlite' # Insert desired database filename here.
     USER_FILENAME = 'user_data.txt' # Insert user filename here.
     FORMAT_FILENAME = 'date_formats.txt' # Insert format filename here.
 
-    create_database(USER_FILENAME, FORMAT_FILENAME)
+    create_database(DB_FILENAME, USER_FILENAME, FORMAT_FILENAME)
 
-    DATABASE = sqlite3.connect(':memory:')
+    DATABASE = sqlite3.connect(DB_FILENAME)
     CURSOR = DATABASE.cursor()
     CURSOR.execute("""SELECT Username, Nationality, Birthdate from Users""")
     USERS = CURSOR.fetchall()
@@ -169,3 +174,5 @@ if __name__ == "__main__":
     DATE_FORMATS = CURSOR.fetchall()
     print 'Date_Formats:'
     print DATE_FORMATS
+
+    DATABASE.close()
