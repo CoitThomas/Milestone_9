@@ -32,32 +32,6 @@ def parse(regex, group_name, data_chunk):
     parsed_data = re.search(regex, data_chunk)
     return parsed_data.group(group_name) if parsed_data else None
 
-def transpose_date(string):
-    """Take in a string containing a date in the format mm/dd/yyyy and
-    return a string conainting a date in the format yyyy-mm-dd.
-    """
-    month, day, year = parse_date(string)
-    return '%s-%s-%s' % (year, month, day)
-
-def parse_date(string):
-    """Take in a string containing a date in the format mm/dd/yyyy and
-    return three numerical strings representing a valid day, month, and
-    year.
-    """
-    #ipdb.set_trace()
-    date = re.search("(?P<month>[0-9]{1,2})" # Month.
-                     "/(?P<day>[0-9]{1,2})" # Day.
-                     "/(?P<year>[0-9]{4})", string) # Year.
-    assert date, "A string in the format mm/dd/yyyy must be provided."
-
-    month = make_int(date.group('month'))
-    day = make_int(date.group('day'))
-    year = make_int(date.group('year'))
-
-    assert is_valid_date(month, day, year), "A valid date must be provided."
-
-    return str(month), str(day), str(year)
-
 def make_int(string):
     """Convert a given numerical string to an integer. If it cannot be
     converted, return None.
@@ -105,11 +79,11 @@ def create_database(db_filename, users_filename, date_formats_filename):
     database = sqlite3.connect(db_filename)
     cursor = database.cursor()
 
-    # Create 'Users' table
+    # Create 'users' table
     cursor.execute("""
-        CREATE TABLE Users(Username text PRIMARY KEY,
-                           Nationality text,
-                           Birthdate datetime)
+        CREATE TABLE users(username TEXT PRIMARY KEY,
+                           nationality TEXT,
+                           birthdate DATE)
     """)
     data = read_file(users_filename)
     assert data, "There is no data in file: %s" % users_filename
@@ -120,22 +94,19 @@ def create_database(db_filename, users_filename, date_formats_filename):
                             "nationality",
                             chunk[1],
                            )
-        date = parse("birthdate:(?P<birthdate>[0-9]{1,2}/[0-9]{1,2}/[0-9]{4})",
-                     "birthdate",
-                     chunk[2],
-                    )
-        #ipdb.set_trace()
-        if date:
-            birthdate = transpose_date(date)
+        birthdate = parse("birthdate:(?P<birthdate>[0-9]{1,2}/[0-9]{1,2}/[0-9]{4})",
+                          "birthdate",
+                          chunk[2],
+                         )
         if username and nationality and birthdate:
-            cursor.execute("""INSERT INTO Users(Username, Nationality, Birthdate)
+            cursor.execute("""INSERT INTO users(username, nationality, birthdate)
                               VALUES(?,?,?)""", (username, nationality, birthdate))
     database.commit()
 
-    # Create 'Date_Formats' table
+    # Create 'date_formats' table
     cursor.execute("""
-        CREATE TABLE Date_Formats(Nationality text PRIMARY KEY,
-                                  Date_Format text)
+        CREATE TABLE date_formats(nationality TEXT PRIMARY KEY,
+                                  date_format TEXT)
     """)
     data = read_file(date_formats_filename)
     assert data, "There is no data in file: %s" % date_formats_filename
@@ -151,7 +122,7 @@ def create_database(db_filename, users_filename, date_formats_filename):
                                 chunk[0])
             #ipdb.set_trace()
             if nationality and date_format:
-                cursor.execute("""INSERT INTO Date_Formats(Nationality, Date_Format)
+                cursor.execute("""INSERT INTO date_formats(nationality, date_format)
                                   VALUES (?,?)""", (nationality, date_format))
     database.commit()
 
@@ -166,11 +137,11 @@ if __name__ == "__main__":
 
     DATABASE = sqlite3.connect(DB_FILENAME)
     CURSOR = DATABASE.cursor()
-    CURSOR.execute("""SELECT Username, Nationality, Birthdate from Users""")
+    CURSOR.execute("""SELECT * FROM users""")
     USERS = CURSOR.fetchall()
     print 'Users:'
     print USERS
-    CURSOR.execute("""SELECT Nationality, Date_Format from Date_Formats""")
+    CURSOR.execute("""SELECT * FROM date_formats""")
     DATE_FORMATS = CURSOR.fetchall()
     print 'Date_Formats:'
     print DATE_FORMATS
