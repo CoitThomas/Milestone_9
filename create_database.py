@@ -2,8 +2,8 @@
 Write the files to an SQLite database file for storage.
 """
 import sqlite3
-import re
-#import ipdb
+import date_validation
+from parse import parse
 
 def read_file(file_name):
     """Read in data from a file and return it."""
@@ -22,57 +22,6 @@ def chunk_data(file_data, size):
     assert 0 < int(size) <= len(data_lines), "A valid size must be provided."
     assert len(data_lines) % size == 0, "Data is incomplete."
     return [data_lines[pos:pos + size] for pos in range(0, len(data_lines), size)]
-
-def parse(regex, group_name, data_chunk):
-    """Take in a chunk of data. Parse the code according to a given
-    regular expression. Group the parsed data according to a given
-    group name and return it. If there is not a match, return None.
-    """
-    #ipdb.set_trace()
-    parsed_data = re.search(regex, data_chunk)
-    return parsed_data.group(group_name) if parsed_data else None
-
-def make_int(string):
-    """Convert a given numerical string to an integer. If it cannot be
-    converted, return None.
-    """
-    try:
-        return int(string)
-    except ValueError:
-        return None
-
-def is_valid_date(month, day, year):
-    """Take in three integers representing a month, day, and year.
-    Verify they are valid representations and return True or False.
-    """
-    return valid_month(month) and valid_day(day, month) and valid_year(year)
-
-def valid_month(month):
-    """Take in an integer representing a month of the year. Return True
-    if it is valid. Otherwise, return False.
-    """
-    return 1 <= month <= 12
-
-def valid_day(day, month):
-    """Take in an integer representing a day and month of the year.
-    Return True if it is a valid day for the given month. Otherwise,
-    return False.
-    """
-    month31 = [1, 3, 5, 7, 8, 10, 12]
-    month30 = [4, 6, 9, 11]
-    assert valid_month(month)
-    if month in month31:
-        return 1 <= day <= 31
-    if month in month30:
-        return 1 <= day <= 30
-    if month == 2:
-        return 1 <= day <= 28
-
-def valid_year(year):
-    """Take in an integer representing a pertinent year. Return True if
-    it is valid. Otherwise, return False.
-    """
-    return 1800 <= year <= 2200
 
 def create_database(db_filename, users_filename, date_formats_filename):
     """Create an SQLite database file."""
@@ -99,6 +48,7 @@ def create_database(db_filename, users_filename, date_formats_filename):
                           chunk[2],
                          )
         if username and nationality and birthdate:
+            assert date_validation.is_valid_str_date(birthdate), "A valid date must be provided."
             cursor.execute("""INSERT INTO users(username, nationality, birthdate)
                               VALUES(?,?,?)""", (username, nationality, birthdate))
     database.commit()
@@ -116,11 +66,9 @@ def create_database(db_filename, users_filename, date_formats_filename):
             nationality = parse("(?P<nationality>[a-zA-Z]+ ?[a-zA-Z]*),",
                                 'nationality',
                                 chunk[0])
-            #ipdb.set_trace()
             date_format = parse("(?P<date_format>'{[a-zA-Z]+}/{[a-zA-Z]+}/{[a-zA-Z]+}')",
                                 'date_format',
                                 chunk[0])
-            #ipdb.set_trace()
             if nationality and date_format:
                 cursor.execute("""INSERT INTO date_formats(nationality, date_format)
                                   VALUES (?,?)""", (nationality, date_format))
