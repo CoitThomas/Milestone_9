@@ -1,42 +1,44 @@
-"""Take in one string command line argument in the form:
-python find_user_by_nationality.py <nationality>
+"""Take in a command line argument in the form:
+python find_user_by_nationality.py <db_filename>.sqlite <nationality>
 Print the usernames of all the users in the database of the specified
 nationality and quit.
 """
-import sys
 import sqlite3
-import re
-from parse import parse
+import get
 
-def find_user_by_nationality(string, db_filename):
+def find_user_by_nationality(user_input, db_cursor):
     """Take in a string command line argument, 'nationality', and a
     string, 'db_filename'. If the nationality exists in the database,
     print the usernames of all the users in the database of that
     nationality. Otherwise, print an error message.
     """
-    database = sqlite3.connect(db_filename)
-    cursor = database.cursor()
-
-    line = re.sub("[',]", "", string.lower())
-    regex = "(?P<nationality>[a-zA-Z]+ ?[a-zA-Z]*)"
-    nationality = parse(regex, 'nationality', line)
-
     sql_query = """SELECT username
                        FROM users
                        WHERE nationality =?"""
-    cursor.execute(sql_query, (nationality,))
-    users = cursor.fetchall()
-    database.close()
+    db_cursor.execute(sql_query, (user_input.lower(),))
+    users = db_cursor.fetchall()
+
     if users:
-        user_list = []
-        for user in users:
-            user_list.append(user[0])
-        return user_list
+        return [user[0] for user in users]
     else:
         return ["Error, no users of that nationality were found."]
 
 if __name__ == "__main__":
-    DB_FILENAME = 'database.sqlite' # Insert desired database filename here.
-    USERS = find_user_by_nationality(str(sys.argv[1:]), DB_FILENAME)
+    USER_INPUT = get.get_cmd_ln_arguments(3, 2)
+
+    DB_FILENAME = get.get_db_filename(USER_INPUT, 0)
+
+    if len(USER_INPUT) == 3:
+        USER_INPUT = [USER_INPUT[1]+' '+USER_INPUT[2]]
+        NATIONALITY = get.get_nationality(USER_INPUT, 0)
+    else:
+        NATIONALITY = get.get_nationality(USER_INPUT, 1)
+
+    DATABASE = sqlite3.connect(DB_FILENAME)
+    CURSOR = DATABASE.cursor()
+
+    USERS = find_user_by_nationality(NATIONALITY, CURSOR)
     for USER in USERS:
         print USER
+
+    DATABASE.close()

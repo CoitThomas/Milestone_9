@@ -1,40 +1,29 @@
-"""Take in one string command line argument in the form:
-python find_user.py <username>
-Print the username, nationality, and birthdate according to the user's
-nationality and quit.
+"""Take in a command line argument in the form:
+python find_user.py <db_filename>.sqlite <username>
+Print the username, nationality, and birthdate according to the
+customary date format of the user's country and quit.
 """
-import sys
 import sqlite3
-import re
-import date_validation
-from parse import parse
+import get
 
-def find_user(string, db_filename):
-    """Take in a string command line argument, 'username', and a
-    string, 'db_filename'. If the username exists in the
+def find_user(user_input, db_cursor):
+    """Take in a string command line argument, 'user_input', and a
+    database object, 'db_cursor'. If the username exists in the
     database, print the corresponding username, nationality and
     birthdate in the format appropriate to the user's nationality.
     Otherwise, print an error message.
     """
-    database = sqlite3.connect(db_filename)
-    cursor = database.cursor()
-
-    line = re.sub("[',]", "", string.lower())
-    regex = r"(?P<username>[\w.-]+)"
-    username = parse(regex, 'username', line)
-
     sql_query = """SELECT username, users.nationality, birthdate, date_format
                        FROM users, date_formats
                        WHERE users.nationality = date_formats.nationality
                            AND username =?"""
-    cursor.execute(sql_query, (username,))
-    user = cursor.fetchone()
-    database.close()
+    db_cursor.execute(sql_query, (user_input.lower(),))
+    user = db_cursor.fetchone()
+
     if user:
-        p_month, p_day, p_year = date_validation.parse_date(user[2])
-        username = user[0]
-        nationality = user[1]
-        birthdate = user[3].format(month=p_month, day=p_day, year=p_year).strip("'")
+        username = get.get_username(user, 0)
+        nationality = get.get_nationality(user, 1)
+        birthdate = get.get_birthdate(user, 2, 3)
         return """username: %s
 nationality: %s
 birthdate: %s""" % (username, nationality, birthdate)
@@ -42,5 +31,14 @@ birthdate: %s""" % (username, nationality, birthdate)
         return "Error, user not found."
 
 if __name__ == "__main__":
-    DB_FILENAME = 'database.sqlite' # Insert desired database filename here.
-    print find_user(str(sys.argv[1:]), DB_FILENAME)
+    USER_INPUT = get.get_cmd_ln_arguments(2, 2)
+
+    DB_FILENAME = get.get_db_filename(USER_INPUT, 0)
+    USERNAME = get.get_username(USER_INPUT, 1)
+
+    DATABASE = sqlite3.connect(DB_FILENAME)
+    CURSOR = DATABASE.cursor()
+
+    print find_user(USERNAME, CURSOR)
+
+    DATABASE.close()
