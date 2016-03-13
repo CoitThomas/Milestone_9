@@ -14,14 +14,16 @@ def test_find_user():
     users_filename = 'test_user_data.txt'
     date_formats_filename = 'test_date_formats.txt'
 
-    database = sqlite3.connect(db_filename)
-    cursor = database.cursor()
+    test_database = sqlite3.connect(db_filename)
+    cursor = test_database.cursor()
 
-    data = create_database.get_data(users_filename, 3)
+    chunk_size = 3
+    data = create_database.get_data_from_file(users_filename, chunk_size)
     assert data, "Data for the 'users' table was not obtained."
     create_database.create_users_table(cursor, data)
 
-    data = create_database.get_data(date_formats_filename, 1)
+    chunk_size = 1
+    data = create_database.get_data_from_file(date_formats_filename, chunk_size)
     assert data, "Data for the 'date_formats' table was not obtained."
     create_database.create_date_formats_table(cursor, data)
 
@@ -46,6 +48,6 @@ birthdate: %s"""
                                                        'american',
                                                        '1/25/1984')
     # Check non-user.
-    assert find_user('margesimpson', cursor) == "Error, user not found."
+    assert find_user('margesimpson', cursor) == "User not found."
 
-    database.close()
+    test_database.close()

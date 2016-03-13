@@ -1,7 +1,39 @@
-"""This module contains all the pertinent functions related to date
-validation.
-"""
+"""Extract a valid birthdate from a string."""
 import re
+from parse import parse
+
+def get(birthdate_str):
+    """Take in a birthdate as a string"""
+    birthdate = parse("(birthdate:)?(?P<birthdate>[0-9]{1,2}/[0-9]{1,2}/[0-9]{4})",
+                      "birthdate",
+                      birthdate_str,
+                     )
+    if birthdate:
+        assert is_valid(birthdate)
+        return birthdate
+    else:
+        return None
+
+def format_date(birthdate_str, template):
+    """Take in a birthdate as a string and parse it into its parts.
+    Rearrange the parts to fit into a given template and return the the
+    newly formatted birthdate string.
+    """
+    assert is_valid(birthdate_str)
+    month, day, year = parse_date_parts(birthdate_str)
+    assert are_valid_date_parts(make_int(month), make_int(day), make_int(year))
+    return template.format(month=month, day=day, year=year)
+
+def is_valid(birthdate_str):
+    """Take in a string representing a date in the format:
+    mm/dd/yyyy
+    Verify it is a valid representation and return True or False.
+    """
+    str_month, str_day, str_year = parse_date_parts(birthdate_str)
+    month = make_int(str_month)
+    day = make_int(str_day)
+    year = make_int(str_year)
+    return are_valid_date_parts(month, day, year)
 
 def valid_month(month):
     """Take in an integer representing a month of the year. Return True
@@ -28,9 +60,9 @@ def valid_year(year):
     """Take in an integer representing a pertinent year. Return True if
     it is valid. Otherwise, return False.
     """
-    return 1800 <= year <= 2200
+    return 1900 <= year <= 2016
 
-def is_valid_date(month, day, year):
+def are_valid_date_parts(month, day, year):
     """Take in three integers representing a month, day, and year.
     Verify they are valid representations and return True or False.
     """
@@ -45,7 +77,7 @@ def make_int(string):
     except ValueError:
         return None
 
-def parse_date(string):
+def parse_date_parts(string):
     """Take in a string containing a date in the format mm/dd/yyyy and
     return three numerical strings representing a valid day, month, and
     year.
@@ -59,17 +91,6 @@ def parse_date(string):
     day = make_int(date.group('day'))
     year = make_int(date.group('year'))
 
-    assert is_valid_date(month, day, year), "A valid date must be provided."
+    assert are_valid_date_parts(month, day, year), "A valid date must be provided."
 
     return str(month), str(day), str(year)
-
-def is_valid_str_date(string):
-    """Take in a string representing a date in the format:
-    mm/dd/yyyy
-    Verify it is a valid representation and return True or False.
-    """
-    str_month, str_day, str_year = parse_date(string)
-    month = make_int(str_month)
-    day = make_int(str_day)
-    year = make_int(str_year)
-    return is_valid_date(month, day, year)
