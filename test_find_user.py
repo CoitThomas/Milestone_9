@@ -4,6 +4,7 @@ given database.
 import sqlite3
 import create_database
 from find_user import find_user
+import read_file
 
 def test_find_user():
     """Assert the correct return values of find_user() when given
@@ -11,21 +12,20 @@ def test_find_user():
     """
     # Create test database and tables.
     db_filename = 'test_find_user.sqlite'
-    users_filename = 'test_user_data.txt'
-    date_formats_filename = 'test_date_formats.txt'
-
     test_database = sqlite3.connect(db_filename)
     cursor = test_database.cursor()
 
-    chunk_size = 3
-    data = create_database.get_data_from_file(users_filename, chunk_size)
-    assert data, "Data for the 'users' table was not obtained."
-    create_database.create_users_table(cursor, data)
+    users_filename = 'test_user_data.txt'
+    user_data_packages = read_file.get_data(users_filename, package_size=3)
+    user_data_rows = [create_database.unpack_user_data(user_data_package)
+                      for user_data_package in user_data_packages]
+    create_database.create_users_table(cursor, user_data_rows)
 
-    chunk_size = 1
-    data = create_database.get_data_from_file(date_formats_filename, chunk_size)
-    assert data, "Data for the 'date_formats' table was not obtained."
-    create_database.create_date_formats_table(cursor, data)
+    date_formats_filename = 'test_date_formats.txt'
+    date_format_data_packages = read_file.get_data(date_formats_filename, package_size=1)
+    date_format_data_rows = [create_database.unpack_date_format_data(date_format_data_package)
+                             for date_format_data_package in date_format_data_packages]
+    create_database.create_date_formats_table(cursor, date_format_data_rows)
 
     template = """username: %s
 nationality: %s
@@ -48,6 +48,6 @@ birthdate: %s"""
                                                        'american',
                                                        '1/25/1984')
     # Check non-user.
-    assert find_user('margesimpson', cursor) == "User not found."
+    assert not find_user('margesimpson', cursor)
 
     test_database.close()

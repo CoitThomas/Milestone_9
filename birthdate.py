@@ -2,9 +2,9 @@
 import re
 from parse import parse
 
-def get(birthdate_str):
+def get_from_label(birthdate_str):
     """Take in a birthdate as a string"""
-    birthdate = parse("(birthdate:)?(?P<birthdate>[0-9]{1,2}/[0-9]{1,2}/[0-9]{4})",
+    birthdate = parse("(birthdate:)(?P<birthdate>[0-9]{1,2}/[0-9]{1,2}/[0-9]{4})",
                       "birthdate",
                       birthdate_str,
                      )

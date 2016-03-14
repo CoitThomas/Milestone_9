@@ -20,10 +20,10 @@ def unpack_user_input(user_input):
     assert database.is_valid_name(db_filename), "Invalid database filename."
 
     if len(user_input) == 3:
-        desired_nationality = nationality.get(user_input[1]+' '+user_input[2])
+        desired_nationality = user_input[1]+' '+user_input[2]
     else:
-        desired_nationality = nationality.get(user_input[1])
-    assert desired_nationality, "Invalid nationality."
+        desired_nationality = user_input[1]
+    assert nationality.is_valid(desired_nationality), "Invalid nationality."
 
     return (db_filename, desired_nationality)
 
@@ -33,11 +33,12 @@ def find_users_by_nationality(desired_nationality, db_cursor):
     print the usernames of all the users in the database of that
     nationality. Otherwise, print an error message.
     """
+    assert nationality.is_valid(desired_nationality), "Invalid nationality."
     select_statement = """SELECT username
                        FROM users
                        WHERE nationality =?"""
     users = database.query_all(select_statement, desired_nationality.lower(), db_cursor)
-    return [user[0] for user in users] if users else ["No users of that nationality were found."]
+    return [user[0] for user in users] if users else None
 
 if __name__ == "__main__":
     # Get command line arguments.
@@ -53,8 +54,11 @@ if __name__ == "__main__":
 
     # Find and print all the users of the specified nationality from the database.
     USERS = find_users_by_nationality(DESIRED_NATIONALITY, CURSOR)
-    for USER in USERS:
-        print USER
+    if USERS:
+        for USER in USERS:
+            print USER
+    else:
+        print "No users of that nationality were found."
 
     # Close database.
     DATABASE.close()

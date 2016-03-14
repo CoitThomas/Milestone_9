@@ -4,20 +4,20 @@ SQLite table with the correct contents.
 import sqlite3
 import create_database
 import database
+import read_file
 
 def test_create_users_table():
     """Assert the correct contents of the users table table."""
     # Create database.
-    db_file = 'test_create_users_table.sqlite'
-    users_file = 'test_user_data.txt'
-
-    test_database = sqlite3.connect(db_file)
+    db_filename = 'test_create_users_table.sqlite'
+    test_database = sqlite3.connect(db_filename)
     cursor = test_database.cursor()
 
-    chunk_size = 3
-    data = create_database.get_data_from_file(users_file, chunk_size)
-    assert data, "Data for the 'users' table test was not obtained."
-    create_database.create_users_table(cursor, data)
+    users_filename = 'test_user_data.txt'
+    user_data_packages = read_file.get_data(users_filename, package_size=3)
+    user_data_rows = [create_database.unpack_user_data(user_data_package)
+                      for user_data_package in user_data_packages]
+    create_database.create_users_table(cursor, user_data_rows)
 
     # Check users table.
     statement = """SELECT *
