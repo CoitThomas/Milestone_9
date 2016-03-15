@@ -9,4 +9,6 @@ def parse(regex, group_name, string):
     group name and return it. If there is not a match, return None.
     """
     parsed_data = re.search(regex, string)
-    return parsed_data.group(group_name) if parsed_data else None
+    if parsed_data:
+        return parsed_data.group(group_name)
+    return None

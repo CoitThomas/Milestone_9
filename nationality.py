@@ -13,7 +13,7 @@ def get_from_label(nationality_str):
                         "nationality",
                         nationality_str,
                        )
-    return nationality if nationality else None
+    return nationality
 
 def get(nationality_str):
     """Take in a string containing the name of a nationality. If a
@@ -24,10 +24,12 @@ def get(nationality_str):
                         "nationality",
                         nationality_str,
                        )
-    return nationality if nationality else None
+    return nationality
 
 def is_valid(nationality_str):
     """Take in a string containing the name of a nationality. Return
     True if it is valid, None if it is not.
     """
-    return re.search("[a-zA-Z]+ ?[a-zA-Z]*", nationality_str)
+    if re.search("[a-zA-Z]+ ?[a-zA-Z]*", nationality_str):
+        return True
+    return False

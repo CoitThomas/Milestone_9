@@ -8,11 +8,7 @@ def get_from_label(birthdate_str):
                       "birthdate",
                       birthdate_str,
                      )
-    if birthdate:
-        assert is_valid(birthdate)
-        return birthdate
-    else:
-        return None
+    return birthdate
 
 def format_date(birthdate_str, template):
     """Take in a birthdate as a string and parse it into its parts.

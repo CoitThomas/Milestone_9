@@ -12,10 +12,12 @@ def get_from_label(username_str):
                      'username',
                      username_str,
                     )
-    return username if username else None
+    return username
 
 def is_valid(nationality_str):
     """Take in a string containing a user's username. Return
     True if it is valid, None if it is not.
     """
-    return re.search(r"[\w.-]+", nationality_str)
+    if re.search(r"[\w.-]+", nationality_str):
+        return True
+    return False

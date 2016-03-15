@@ -18,4 +18,4 @@ def get(date_format_str):
                         "date_format",
                         date_format_str,
                        )
-    return date_format if date_format else None
+    return date_format
