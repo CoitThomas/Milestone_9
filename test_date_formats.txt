@@ -1,0 +1,5 @@
+american,'{month}/{day}/{year}'
+british,'{day}/{month}/{year}'
+south korean,'{year}/{month}/{day}'
+japanese,'mrroboto'
+kenyan,

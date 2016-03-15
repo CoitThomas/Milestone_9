@@ -1,0 +1,21 @@
+username:coit125
+nationality:american
+birthdate:01/25/1984
+username:bcummberbatch
+nationality:british
+birthdate:04/21/1978
+username:orangelover1107
+nationality:south korean
+birthdate:11/07/1983
+username:
+nationality:american
+birthdate:07/04/1981
+username:homersimpson
+nationality:
+birthdate:10/25/1980
+username:margesimpson
+nationality:american
+birthdate:
+username:austinwiltshire
+nationality:american
+birthdate:04/20/1983
