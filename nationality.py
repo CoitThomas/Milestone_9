@@ -30,6 +30,4 @@ def is_valid(nationality_str):
     """Take in a string containing the name of a nationality. Return
     True if it is valid, None if it is not.
     """
-    if re.search("[a-zA-Z]+ ?[a-zA-Z]*", nationality_str):
-        return True
-    return False
+    return True if re.search("[a-zA-Z]+ ?[a-zA-Z]*", nationality_str) else False
